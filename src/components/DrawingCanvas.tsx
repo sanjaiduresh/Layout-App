@@ -583,7 +583,7 @@ export default function DrawingCanvas() {
                       actions.setSelectedPanel(panel.id);
                     }}
                   >
-                    <div className="relative group">
+                    <div className="relative group select-none">
                       <div
                         className="relative"
                         style={{ width: panel.width, height: panel.height }}
@@ -609,7 +609,7 @@ export default function DrawingCanvas() {
                           />
                         ) : panel.shape === "ellipse" ? (
                           <div
-                            className={`w-full h-full ${
+                            className={`w-half h-full ${
                               theme === "dark"
                                 ? "bg-gray-700 shadow-xl shadow-gray-900/70 border-gray-500"
                                 : "bg-white shadow-xl shadow-gray-300/70 border-gray-300"
