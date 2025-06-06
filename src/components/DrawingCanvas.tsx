@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { Trash2, Move, Plus, Pencil } from "lucide-react";
 import Draggable from "react-draggable";
@@ -6,7 +6,6 @@ import html2canvas from "html2canvas";
 import {
   CanvasConfig,
   Panel,
-  CanvasState,
   ResizeStartPos,
   ResizingPanel,
   PanelShape,
@@ -24,7 +23,6 @@ export default function DrawingCanvas() {
   const {
     panels,
     selectedPanel,
-    editingPanel,
     canvasWidth,
     canvasHeight,
     canvasBgColor,
