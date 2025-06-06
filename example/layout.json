@@ -1,0 +1,42 @@
+{
+  "panels": [
+    {
+      "id": "f0674b2c-bdbf-41ae-98d9-6de8ae883953",
+      "x": 7,
+      "y": 314,
+      "width": 1260,
+      "height": 400,
+      "zIndex": 1
+    },
+    {
+      "id": "c1040fbc-bbdc-4cbe-ab4b-77fc1e5a892b",
+      "x": 663,
+      "y": 1,
+      "width": 600,
+      "height": 305,
+      "zIndex": 2
+    },
+    {
+      "id": "ac7f7a47-7090-4797-8cf5-856470574af0",
+      "x": 7,
+      "y": 127,
+      "width": 650,
+      "height": 180,
+      "zIndex": 3
+    },
+    {
+      "id": "54aea9ff-18a1-4be0-83e5-978d7b45009c",
+      "x": 7,
+      "y": 4,
+      "width": 650,
+      "height": 110,
+      "zIndex": 4
+    }
+  ],
+  "canvasWidth": 1280,
+  "canvasHeight": 720,
+  "canvasBgColor": "#ffffff",
+  "canvasFgColor": "#000000",
+  "roundedCorners": true,
+  "showGrid": false
+}
