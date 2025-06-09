@@ -30,7 +30,7 @@ const initialState: ExtendedCanvasState = {
   panels: [],
   selectedPanel: null,
   editingPanel: null,
-  canvasWidth: 1280,
+  canvasWidth: 1180,
   canvasHeight: 720,
   canvasBgColor: "#ffffff",
   canvasFgColor: "#000000",
@@ -236,16 +236,16 @@ export const useCanvasState = () => {
 
   // Load configuration from localStorage on mount
   useEffect(() => {
-    const savedConfig = localStorage.getItem("canvasConfig");
-    if (savedConfig) {
-      try {
-        const config: CanvasConfig = JSON.parse(savedConfig);
-        dispatch({ type: "LOAD_CONFIG", payload: config });
-      } catch (error) {
-        console.error("Error loading configuration from localStorage:", error);
-        localStorage.removeItem("canvasConfig");
-      }
-    }
+    // const savedConfig = localStorage.getItem("canvasConfig");
+    // if (savedConfig) {
+    //   try {
+    //     const config: CanvasConfig = JSON.parse(savedConfig);
+    //     dispatch({ type: "LOAD_CONFIG", payload: config });
+    //   } catch (error) {
+    //     console.error("Error loading configuration from localStorage:", error);
+    //     localStorage.removeItem("canvasConfig");
+    //   }
+    // }
   }, []);
 
   // Save configuration to localStorage whenever state changes
@@ -259,11 +259,11 @@ export const useCanvasState = () => {
       roundedCorners: state.roundedCorners,
       showGrid: state.showGrid,
     };
-    try {
-      localStorage.setItem("canvasConfig", JSON.stringify(config));
-    } catch (error) {
-      console.error("Error saving configuration to localStorage:", error);
-    }
+    // try {
+    //   localStorage.setItem("canvasConfig", JSON.stringify(config));
+    // } catch (error) {
+    //   console.error("Error saving configuration to localStorage:", error);
+    // }
   }, [
     state.panels,
     state.canvasWidth,

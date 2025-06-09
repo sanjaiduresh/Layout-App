@@ -36,18 +36,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (savedCanvasHeight) setCanvasHeight(parseInt(savedCanvasHeight));
   }, []);
 
-  // Save to localStorage when panels/canvas changes
-  useEffect(() => {
-    localStorage.setItem("panels", JSON.stringify(panels));
-  }, [panels]);
+  // // Save to localStorage when panels/canvas changes
+  // useEffect(() => {
+  //   localStorage.setItem("panels", JSON.stringify(panels));
+  // }, [panels]);
 
-  useEffect(() => {
-    localStorage.setItem("canvasWidth", canvasWidth.toString());
-  }, [canvasWidth]);
+  // useEffect(() => {
+  //   localStorage.setItem("canvasWidth", canvasWidth.toString());
+  // }, [canvasWidth]);
 
-  useEffect(() => {
-    localStorage.setItem("canvasHeight", canvasHeight.toString());
-  }, [canvasHeight]);
+  // useEffect(() => {
+  //   localStorage.setItem("canvasHeight", canvasHeight.toString());
+  // }, [canvasHeight]);
 
   const setPanels = (newPanels: Panel[]) => {
     setPanelsState(newPanels);
