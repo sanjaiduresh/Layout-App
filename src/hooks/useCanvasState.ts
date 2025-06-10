@@ -1,4 +1,4 @@
-import { useReducer, useEffect } from 'react';
+import { useReducer } from 'react';
 import { CanvasConfig, Panel, CanvasState } from '../types/canvas';
 
 // Canvas Action Types
@@ -82,12 +82,12 @@ const validateAndAdjustPanels = (
 };
 
 // Save current state to history
-const saveStateToHistory = (state: ExtendedCanvasState): ExtendedCanvasState => ({
-  ...state,
+const saveStateToHistory = (state: ExtendedCanvasState, newState: ExtendedCanvasState): ExtendedCanvasState => ({
+  ...newState,
   past: [
     {
       ...state,
-      past: [], 
+      past: [],
       future: [],
     },
     ...state.past.slice(0, 50), // Limit history to 50 steps
@@ -102,30 +102,30 @@ const canvasReducer = (
 ): ExtendedCanvasState => {
   switch (action.type) {
     case "SET_PANELS":
-      return saveStateToHistory({
+      return saveStateToHistory(state, {
         ...state,
         panels: action.payload,
       });
     case "ADD_PANEL":
-      return saveStateToHistory({
+      return saveStateToHistory(state, {
         ...state,
         panels: [...state.panels, action.payload],
       });
     case "REMOVE_PANEL":
-      return saveStateToHistory({
+      return saveStateToHistory(state, {
         ...state,
         panels: state.panels.filter((panel) => panel.id !== action.payload),
         selectedPanel: state.selectedPanel === action.payload ? null : state.selectedPanel,
       });
     case "UPDATE_PANEL":
-      return saveStateToHistory({
+      return saveStateToHistory(state, {
         ...state,
         panels: state.panels.map((panel) =>
           panel.id === action.payload.id ? { ...panel, ...action.payload.updates } : panel
         ),
       });
     case "UPDATE_PANEL_POSITION":
-      return saveStateToHistory({
+      return saveStateToHistory(state, {
         ...state,
         panels: state.panels.map((panel) =>
           panel.id === action.payload.id
@@ -138,7 +138,7 @@ const canvasReducer = (
         ),
       });
     case "UPDATE_PANEL_DIMENSIONS":
-      return saveStateToHistory({
+      return saveStateToHistory(state, {
         ...state,
         panels: state.panels.map((panel) =>
           panel.id === action.payload.id
@@ -147,7 +147,7 @@ const canvasReducer = (
         ),
       });
     case "CLEAR_PANELS":
-      return saveStateToHistory({
+      return saveStateToHistory(state, {
         ...state,
         panels: [],
         selectedPanel: null,
@@ -155,20 +155,20 @@ const canvasReducer = (
     case "SET_SELECTED_PANEL":
       return { ...state, selectedPanel: action.payload };
     case "SET_CANVAS_DIMENSIONS":
-      return saveStateToHistory({
+      return saveStateToHistory(state, {
         ...state,
         canvasWidth: action.payload.width,
         canvasHeight: action.payload.height,
         panels: validateAndAdjustPanels(state.panels, action.payload.width, action.payload.height),
       });
     case "SET_CANVAS_COLORS":
-      return saveStateToHistory({
+      return saveStateToHistory(state, {
         ...state,
         ...(action.payload.bgColor && { canvasBgColor: action.payload.bgColor }),
         ...(action.payload.fgColor && { canvasFgColor: action.payload.fgColor }),
       });
     case "SET_CANVAS_OPTIONS":
-      return saveStateToHistory({
+      return saveStateToHistory(state, {
         ...state,
         ...(action.payload.roundedCorners !== undefined && { roundedCorners: action.payload.roundedCorners }),
         ...(action.payload.showGrid !== undefined && { showGrid: action.payload.showGrid }),
@@ -185,7 +185,7 @@ const canvasReducer = (
         action.payload.canvasWidth || 1280,
         action.payload.canvasHeight || 720
       );
-      return saveStateToHistory({
+      return saveStateToHistory(state, {
         ...state,
         panels: validatedPanels,
         canvasWidth: action.payload.canvasWidth || 1280,
@@ -233,46 +233,6 @@ const canvasReducer = (
 // Custom Hook
 export const useCanvasState = () => {
   const [state, dispatch] = useReducer(canvasReducer, initialState);
-
-  // Load configuration from localStorage on mount
-  useEffect(() => {
-    // const savedConfig = localStorage.getItem("canvasConfig");
-    // if (savedConfig) {
-    //   try {
-    //     const config: CanvasConfig = JSON.parse(savedConfig);
-    //     dispatch({ type: "LOAD_CONFIG", payload: config });
-    //   } catch (error) {
-    //     console.error("Error loading configuration from localStorage:", error);
-    //     localStorage.removeItem("canvasConfig");
-    //   }
-    // }
-  }, []);
-
-  // Save configuration to localStorage whenever state changes
-  useEffect(() => {
-    const config: CanvasConfig = {
-      panels: state.panels,
-      canvasWidth: state.canvasWidth,
-      canvasHeight: state.canvasHeight,
-      canvasBgColor: state.canvasBgColor,
-      canvasFgColor: state.canvasFgColor,
-      roundedCorners: state.roundedCorners,
-      showGrid: state.showGrid,
-    };
-    // try {
-    //   localStorage.setItem("canvasConfig", JSON.stringify(config));
-    // } catch (error) {
-    //   console.error("Error saving configuration to localStorage:", error);
-    // }
-  }, [
-    state.panels,
-    state.canvasWidth,
-    state.canvasHeight,
-    state.canvasBgColor,
-    state.canvasFgColor,
-    state.roundedCorners,
-    state.showGrid,
-  ]);
 
   // Action creators for easier usage
   const actions = {

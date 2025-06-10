@@ -36,8 +36,8 @@ export default function DrawingCanvas() {
   const resizeStartPos = useRef<ResizeStartPos | null>(null);
   const [, setNewWidth] = useState("");
   const [, setNewHeight] = useState("");
-  const [newCanvasWidth, setNewCanvasWidth] = useState("");
-  const [newCanvasHeight, setNewCanvasHeight] = useState("");
+  const [, setNewCanvasWidth] = useState("");
+  const [, setNewCanvasHeight] = useState("");
   const [copiedPanel, setCopiedPanel] = useState<Panel | null>(null);
 
   useEffect(() => {
@@ -298,12 +298,6 @@ export default function DrawingCanvas() {
     }
   };
 
-  const handleCanvasKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleCanvasDimensionSubmit(newCanvasWidth, newCanvasHeight);
-    }
-  };
-
   const exportToPNG = () => {
     const canvas = document.querySelector(".canvas-container");
     if (canvas) {
@@ -362,7 +356,6 @@ export default function DrawingCanvas() {
 
   const clearPanels = () => {
     actions.clearPanels();
-    localStorage.removeItem("canvasConfig");
   };
 
   const handleBgColorChange = (color: string) => {
