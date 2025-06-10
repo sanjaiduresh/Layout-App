@@ -19,6 +19,7 @@ interface PanelComponentProps {
     removePanel: (id: string) => void;
     setEditingStates: (panelId?: string, isEditingCanvas?: boolean) => void;
   };
+  onDrag: (id: string, e: any, data: { x: number; y: number }) => void; // Added onDrag prop
   onDragStop: (id: string, e: any, data: { x: number; y: number }) => void;
   onStartResizing: (e: React.MouseEvent, id: string, corner: string) => void;
   onRemovePanel: (id: string) => void;
@@ -34,6 +35,7 @@ export default function PanelComponent({
   selectedPanel,
   roundedCorners,
   actions,
+  onDrag, // Added to props
   onDragStop,
   onStartResizing,
   onRemovePanel,
@@ -54,6 +56,7 @@ export default function PanelComponent({
     <Draggable
       key={panel.id}
       position={{ x: panel.x, y: panel.y }}
+      onDrag={(e, data) => onDrag(panel.id, e, data)} // Added onDrag handler
       onStop={(e, data) => onDragStop(panel.id, e, data)}
       bounds="parent"
       disabled={(!isCtrlPressed && !moveMode) || !!resizingPanel}
@@ -73,24 +76,24 @@ export default function PanelComponent({
               <div
                 className={`w-full h-full ${
                   theme === "dark"
-                    ? "bg-gray-700 shadow-xl shadow-gray-900/70 border-gray-500"
-                    : "bg-white shadow-xl shadow-gray-300/70 border-gray-300"
+                    ? "bg-gray-700 border-gray-500"
+                    : "bg-white border-gray-300"
                 } ${roundedCorners ? "rounded-lg" : ""} border-2 transition-colors duration-200`}
               />
             ) : panel.shape === "circle" ? (
               <div
                 className={`w-full h-full ${
                   theme === "dark"
-                    ? "bg-gray-700 shadow-xl shadow-gray-900/70 border-gray-500"
-                    : "bg-white shadow-xl shadow-gray-300/70 border-gray-300"
+                    ? "bg-gray-700 border-gray-500"
+                    : "bg-white border-gray-300"
                 } rounded-full border-2 transition-colors duration-200`}
               />
             ) : panel.shape === "ellipse" ? (
               <div
-                className={`w-half h-full ${
+                className={`w-full h-full ${
                   theme === "dark"
-                    ? "bg-gray-700 shadow-xl shadow-gray-900/70 border-gray-500"
-                    : "bg-white shadow-xl shadow-gray-300/70 border-gray-300"
+                    ? "bg-gray-700 border-gray-500"
+                    : "bg-white border-gray-300"
                 } border-2 transition-colors duration-200`}
                 style={{ borderRadius: "50%" }}
               />

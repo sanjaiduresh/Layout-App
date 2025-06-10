@@ -13,7 +13,12 @@ import Toolbar from "./ToolBar";
 import { useCanvasState } from "../hooks/useCanvasState";
 import PanelComponent from "./Panel";
 
-// DrawingCanvas Component
+// Guideline Interface
+interface Guideline {
+  type: "horizontal" | "vertical";
+  position: number; // x for vertical, y for horizontal
+}
+
 export default function DrawingCanvas() {
   const { theme } = useTheme();
   const { state, actions } = useCanvasState();
@@ -33,12 +38,16 @@ export default function DrawingCanvas() {
   const [moveMode, setMoveMode] = useState(false);
   const [resizingPanel, setResizingPanel] = useState<ResizingPanel | null>(null);
   const [resizingCanvas, setResizingCanvas] = useState<string | null>(null);
+  const [guidelines, setGuidelines] = useState<Guideline[]>([]);
   const resizeStartPos = useRef<ResizeStartPos | null>(null);
   const [, setNewWidth] = useState("");
   const [, setNewHeight] = useState("");
   const [, setNewCanvasWidth] = useState("");
   const [, setNewCanvasHeight] = useState("");
   const [copiedPanel, setCopiedPanel] = useState<Panel | null>(null);
+
+  // Alignment threshold (pixels)
+  const ALIGNMENT_THRESHOLD = 5;
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -159,6 +168,7 @@ export default function DrawingCanvas() {
       setResizingPanel(null);
       setResizingCanvas(null);
       resizeStartPos.current = null;
+      setGuidelines([]); // Clear guidelines on mouse up
     };
 
     if (resizingPanel || resizingCanvas) {
@@ -275,8 +285,84 @@ export default function DrawingCanvas() {
     actions.removePanel(id);
   };
 
+  const handleDrag = (id: string, e: any, data: { x: number; y: number }) => {
+    // Update panel position
+    actions.updatePanelPosition(id, data.x, data.y);
+
+    // Calculate guidelines
+    const panel = panels.find((p) => p.id === id);
+    if (!panel) return;
+
+    const newGuidelines: Guideline[] = [];
+    const panelLeft = data.x;
+    const panelRight = data.x + panel.width;
+    const panelTop = data.y;
+    const panelBottom = data.y + panel.height;
+    const panelCenterX = data.x + panel.width / 2;
+    const panelCenterY = data.y + panel.height / 2;
+    const canvasCenterX = canvasWidth / 2;
+    const canvasCenterY = canvasHeight / 2;
+
+    // Check alignment with canvas center
+    if (Math.abs(panelCenterX - canvasCenterX) < ALIGNMENT_THRESHOLD) {
+      newGuidelines.push({ type: "vertical", position: canvasCenterX });
+    }
+    if (Math.abs(panelCenterY - canvasCenterY) < ALIGNMENT_THRESHOLD) {
+      newGuidelines.push({ type: "horizontal", position: canvasCenterY });
+    }
+
+    // Check alignment with other panels
+    panels.forEach((otherPanel) => {
+      if (otherPanel.id === id) return; // Skip the dragged panel
+
+      const otherLeft = otherPanel.x;
+      const otherRight = otherPanel.x + otherPanel.width;
+      const otherTop = otherPanel.y;
+      const otherBottom = otherPanel.y + otherPanel.height;
+      const otherCenterX = otherPanel.x + otherPanel.width / 2;
+      const otherCenterY = otherPanel.y + otherPanel.height / 2;
+
+      // Vertical alignments (left, center, right)
+      if (Math.abs(panelLeft - otherLeft) < ALIGNMENT_THRESHOLD) {
+        newGuidelines.push({ type: "vertical", position: otherLeft });
+      }
+      if (Math.abs(panelLeft - otherRight) < ALIGNMENT_THRESHOLD) {
+        newGuidelines.push({ type: "vertical", position: otherRight });
+      }
+      if (Math.abs(panelRight - otherLeft) < ALIGNMENT_THRESHOLD) {
+        newGuidelines.push({ type: "vertical", position: otherLeft });
+      }
+      if (Math.abs(panelRight - otherRight) < ALIGNMENT_THRESHOLD) {
+        newGuidelines.push({ type: "vertical", position: otherRight });
+      }
+      if (Math.abs(panelCenterX - otherCenterX) < ALIGNMENT_THRESHOLD) {
+        newGuidelines.push({ type: "vertical", position: otherCenterX });
+      }
+
+      // Horizontal alignments (top, center, bottom)
+      if (Math.abs(panelTop - otherTop) < ALIGNMENT_THRESHOLD) {
+        newGuidelines.push({ type: "horizontal", position: otherTop });
+      }
+      if (Math.abs(panelTop - otherBottom) < ALIGNMENT_THRESHOLD) {
+        newGuidelines.push({ type: "horizontal", position: otherBottom });
+      }
+      if (Math.abs(panelBottom - otherTop) < ALIGNMENT_THRESHOLD) {
+        newGuidelines.push({ type: "horizontal", position: otherTop });
+      }
+      if (Math.abs(panelBottom - otherBottom) < ALIGNMENT_THRESHOLD) {
+        newGuidelines.push({ type: "horizontal", position: otherBottom });
+      }
+      if (Math.abs(panelCenterY - otherCenterY) < ALIGNMENT_THRESHOLD) {
+        newGuidelines.push({ type: "horizontal", position: otherCenterY });
+      }
+    });
+
+    setGuidelines(newGuidelines);
+  };
+
   const handleDragStop = (id: string, e: any, data: { x: number; y: number }) => {
     actions.updatePanelPosition(id, data.x, data.y);
+    setGuidelines([]); // Clear guidelines when dragging stops
   };
 
   const handleDimensionClick = (panel: Panel) => {
@@ -453,6 +539,34 @@ export default function DrawingCanvas() {
                 backgroundSize: showGrid ? "20px 20px" : "auto",
               }}
             >
+              {/* Render Guidelines */}
+              {guidelines.map((guideline, index) => (
+                <div
+                  key={`guideline-${index}`}
+                  className="absolute"
+                  style={
+                    guideline.type === "vertical"
+                      ? {
+                          left: guideline.position,
+                          top: 0,
+                          width: "1px",
+                          height: "100%",
+                          background: "red",
+                          borderLeft: "1px dashed red",
+                          zIndex: 9999,
+                        }
+                      : {
+                          top: guideline.position,
+                          left: 0,
+                          width: "100%",
+                          height: "1px",
+                          background: "red",
+                          borderTop: "1px dashed red",
+                          zIndex: 9999,
+                        }
+                  }
+                />
+              ))}
               {/* Canvas Resize Handles */}
               <div className="absolute inset-0 flex items-center justify-center border-2 border-transparent hover:border-blue-500 transition-colors duration-200 border-dashed">
                 <div
@@ -484,6 +598,7 @@ export default function DrawingCanvas() {
                     selectedPanel={selectedPanel}
                     roundedCorners={roundedCorners}
                     actions={actions}
+                    onDrag={handleDrag}
                     onDragStop={handleDragStop}
                     onStartResizing={startResizing}
                     onRemovePanel={removePanel}
