@@ -46,7 +46,6 @@ export default function DrawingCanvas() {
   const [, setNewCanvasHeight] = useState("");
   const [copiedPanel, setCopiedPanel] = useState<Panel | null>(null);
 
-  // Alignment threshold (pixels)
   const ALIGNMENT_THRESHOLD = 5;
 
   useEffect(() => {
@@ -276,6 +275,8 @@ export default function DrawingCanvas() {
         height: panelShape === "circle" ? 400 : 400,
         zIndex: maxZIndex + 1,
         shape: panelShape,
+        fillColor: "#ffffff",
+        borderColor: "#d1d5db",
       };
       actions.addPanel(newPanel);
     }
@@ -286,10 +287,8 @@ export default function DrawingCanvas() {
   };
 
   const handleDrag = (id: string, e: any, data: { x: number; y: number }) => {
-    // Update panel position
     actions.updatePanelPosition(id, data.x, data.y);
 
-    // Calculate guidelines
     const panel = panels.find((p) => p.id === id);
     if (!panel) return;
 
@@ -303,7 +302,6 @@ export default function DrawingCanvas() {
     const canvasCenterX = canvasWidth / 2;
     const canvasCenterY = canvasHeight / 2;
 
-    // Check alignment with canvas center
     if (Math.abs(panelCenterX - canvasCenterX) < ALIGNMENT_THRESHOLD) {
       newGuidelines.push({ type: "vertical", position: canvasCenterX });
     }
@@ -311,9 +309,8 @@ export default function DrawingCanvas() {
       newGuidelines.push({ type: "horizontal", position: canvasCenterY });
     }
 
-    // Check alignment with other panels
     panels.forEach((otherPanel) => {
-      if (otherPanel.id === id) return; // Skip the dragged panel
+      if (otherPanel.id === id) return;
 
       const otherLeft = otherPanel.x;
       const otherRight = otherPanel.x + otherPanel.width;
@@ -322,7 +319,6 @@ export default function DrawingCanvas() {
       const otherCenterX = otherPanel.x + otherPanel.width / 2;
       const otherCenterY = otherPanel.y + otherPanel.height / 2;
 
-      // Vertical alignments (left, center, right)
       if (Math.abs(panelLeft - otherLeft) < ALIGNMENT_THRESHOLD) {
         newGuidelines.push({ type: "vertical", position: otherLeft });
       }
@@ -339,7 +335,6 @@ export default function DrawingCanvas() {
         newGuidelines.push({ type: "vertical", position: otherCenterX });
       }
 
-      // Horizontal alignments (top, center, bottom)
       if (Math.abs(panelTop - otherTop) < ALIGNMENT_THRESHOLD) {
         newGuidelines.push({ type: "horizontal", position: otherTop });
       }
@@ -362,7 +357,7 @@ export default function DrawingCanvas() {
 
   const handleDragStop = (id: string, e: any, data: { x: number; y: number }) => {
     actions.updatePanelPosition(id, data.x, data.y);
-    setGuidelines([]); // Clear guidelines when dragging stops
+    setGuidelines([]);
   };
 
   const handleDimensionClick = (panel: Panel) => {
@@ -433,7 +428,7 @@ export default function DrawingCanvas() {
           actions.loadConfig(config);
         } catch (error) {
           console.error("Error importing configuration:", error);
-          alert("Error importing configuration. Please check the file format.");
+          alert("Error importing JSON. Please check the file format.");
         }
       };
       reader.readAsText(file);
@@ -539,7 +534,6 @@ export default function DrawingCanvas() {
                 backgroundSize: showGrid ? "20px 20px" : "auto",
               }}
             >
-              {/* Render Guidelines */}
               {guidelines.map((guideline, index) => (
                 <div
                   key={`guideline-${index}`}
@@ -567,7 +561,6 @@ export default function DrawingCanvas() {
                   }
                 />
               ))}
-              {/* Canvas Resize Handles */}
               <div className="absolute inset-0 flex items-center justify-center border-2 border-transparent hover:border-blue-500 transition-colors duration-200 border-dashed">
                 <div
                   className="absolute -top-2 -left-2 w-4 h-4 bg-blue-500 rounded-full cursor-nwse-resize opacity-0 hover:opacity-100 z-30"
@@ -597,7 +590,14 @@ export default function DrawingCanvas() {
                     resizingPanel={resizingPanel}
                     selectedPanel={selectedPanel}
                     roundedCorners={roundedCorners}
-                    actions={actions}
+                    actions={{
+                      setSelectedPanel: actions.setSelectedPanel,
+                      updatePanel: actions.updatePanel,
+                      removePanel: actions.removePanel,
+                      setEditingStates: actions.setEditingStates,
+                      bringForward: actions.bringForward,
+                      bringBackward: actions.bringBackward,
+                    }}
                     onDrag={handleDrag}
                     onDragStop={handleDragStop}
                     onStartResizing={startResizing}
@@ -607,9 +607,8 @@ export default function DrawingCanvas() {
                 ))
               ) : (
                 <div
-                  className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-600"
-                  }`}
+                  className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center`}
+                  style={{ color: canvasFgColor }}
                 >
                   No panels available. Click the <Plus size={16} className="inline" /> button to add a panel.
                 </div>
@@ -631,6 +630,6 @@ export default function DrawingCanvas() {
           </div>
         </div>
       </div>
-    </div>
+    </div>  
   );
 }

@@ -1,5 +1,5 @@
-import { useReducer } from 'react';
-import { CanvasConfig, Panel, CanvasState } from '../types/canvas';
+import { useReducer } from "react";
+import { CanvasConfig, Panel, CanvasState } from "../types/canvas";
 
 // Canvas Action Types
 type CanvasAction =
@@ -7,17 +7,37 @@ type CanvasAction =
   | { type: "ADD_PANEL"; payload: Panel }
   | { type: "REMOVE_PANEL"; payload: string }
   | { type: "UPDATE_PANEL"; payload: { id: string; updates: Partial<Panel> } }
-  | { type: "UPDATE_PANEL_POSITION"; payload: { id: string; x: number; y: number } }
-  | { type: "UPDATE_PANEL_DIMENSIONS"; payload: { id: string; width: number; height: number } }
+  | {
+      type: "UPDATE_PANEL_POSITION";
+      payload: { id: string; x: number; y: number };
+    }
+  | {
+      type: "UPDATE_PANEL_DIMENSIONS";
+      payload: { id: string; width: number; height: number };
+    }
   | { type: "CLEAR_PANELS" }
   | { type: "SET_SELECTED_PANEL"; payload: string | null }
-  | { type: "SET_CANVAS_DIMENSIONS"; payload: { width: number; height: number } }
-  | { type: "SET_CANVAS_COLORS"; payload: { bgColor?: string; fgColor?: string } }
-  | { type: "SET_CANVAS_OPTIONS"; payload: { roundedCorners?: boolean; showGrid?: boolean } }
-  | { type: "SET_EDITING_STATES"; payload: { editingPanel?: string | null; isEditingCanvas?: boolean } }
+  | {
+      type: "SET_CANVAS_DIMENSIONS";
+      payload: { width: number; height: number };
+    }
+  | {
+      type: "SET_CANVAS_COLORS";
+      payload: { bgColor?: string; fgColor?: string };
+    }
+  | {
+      type: "SET_CANVAS_OPTIONS";
+      payload: { roundedCorners?: boolean; showGrid?: boolean };
+    }
+  | {
+      type: "SET_EDITING_STATES";
+      payload: { editingPanel?: string | null; isEditingCanvas?: boolean };
+    }
   | { type: "LOAD_CONFIG"; payload: CanvasConfig }
   | { type: "UNDO" }
-  | { type: "REDO" };
+  | { type: "REDO" }
+  | { type: "BRING_FORWARD"; payload: string }
+  | { type: "BRING_BACKWARD"; payload: string };
 
 // Extended Canvas State with History
 interface ExtendedCanvasState extends CanvasState {
@@ -78,11 +98,17 @@ const validateAndAdjustPanels = (
       ...panel,
       x: Math.max(0, Math.min(panel.x, canvasWidth - panel.width)),
       y: Math.max(0, Math.min(panel.y, canvasHeight - panel.height)),
+      zIndex: Math.max(1, panel.zIndex), // Ensure zIndex is at least 1
+      fillColor: panel.fillColor || "#ffffff",
+      borderColor: panel.borderColor || "#d1d5db",
     }));
 };
 
 // Save current state to history
-const saveStateToHistory = (state: ExtendedCanvasState, newState: ExtendedCanvasState): ExtendedCanvasState => ({
+const saveStateToHistory = (
+  state: ExtendedCanvasState,
+  newState: ExtendedCanvasState
+): ExtendedCanvasState => ({
   ...newState,
   past: [
     {
@@ -104,24 +130,35 @@ const canvasReducer = (
     case "SET_PANELS":
       return saveStateToHistory(state, {
         ...state,
-        panels: action.payload,
+        panels: validateAndAdjustPanels(action.payload, state.canvasWidth, state.canvasHeight),
       });
     case "ADD_PANEL":
       return saveStateToHistory(state, {
         ...state,
-        panels: [...state.panels, action.payload],
+        panels: [
+          ...state.panels,
+          {
+            ...action.payload,
+            zIndex: Math.max(1, action.payload.zIndex || 1), // Ensure zIndex is at least 1
+            fillColor: action.payload.fillColor || "#ffffff",
+            borderColor: action.payload.borderColor || "#d1d5db",
+          },
+        ],
       });
     case "REMOVE_PANEL":
       return saveStateToHistory(state, {
         ...state,
         panels: state.panels.filter((panel) => panel.id !== action.payload),
-        selectedPanel: state.selectedPanel === action.payload ? null : state.selectedPanel,
+        selectedPanel:
+          state.selectedPanel === action.payload ? null : state.selectedPanel,
       });
     case "UPDATE_PANEL":
       return saveStateToHistory(state, {
         ...state,
         panels: state.panels.map((panel) =>
-          panel.id === action.payload.id ? { ...panel, ...action.payload.updates } : panel
+          panel.id === action.payload.id
+            ? { ...panel, ...action.payload.updates, zIndex: Math.max(1, panel.zIndex) }
+            : panel
         ),
       });
     case "UPDATE_PANEL_POSITION":
@@ -131,8 +168,14 @@ const canvasReducer = (
           panel.id === action.payload.id
             ? {
                 ...panel,
-                x: Math.max(0, Math.min(action.payload.x, state.canvasWidth - panel.width)),
-                y: Math.max(0, Math.min(action.payload.y, state.canvasHeight - panel.height)),
+                x: Math.max(
+                  0,
+                  Math.min(action.payload.x, state.canvasWidth - panel.width)
+                ),
+                y: Math.max(
+                  0,
+                  Math.min(action.payload.y, state.canvasHeight - panel.height)
+                ),
               }
             : panel
         ),
@@ -142,7 +185,11 @@ const canvasReducer = (
         ...state,
         panels: state.panels.map((panel) =>
           panel.id === action.payload.id
-            ? { ...panel, width: action.payload.width, height: action.payload.height }
+            ? {
+                ...panel,
+                width: action.payload.width,
+                height: action.payload.height,
+              }
             : panel
         ),
       });
@@ -159,25 +206,41 @@ const canvasReducer = (
         ...state,
         canvasWidth: action.payload.width,
         canvasHeight: action.payload.height,
-        panels: validateAndAdjustPanels(state.panels, action.payload.width, action.payload.height),
+        panels: validateAndAdjustPanels(
+          state.panels,
+          action.payload.width,
+          action.payload.height
+        ),
       });
     case "SET_CANVAS_COLORS":
       return saveStateToHistory(state, {
         ...state,
-        ...(action.payload.bgColor && { canvasBgColor: action.payload.bgColor }),
-        ...(action.payload.fgColor && { canvasFgColor: action.payload.fgColor }),
+        ...(action.payload.bgColor && {
+          canvasBgColor: action.payload.bgColor,
+        }),
+        ...(action.payload.fgColor && {
+          canvasFgColor: action.payload.fgColor,
+        }),
       });
     case "SET_CANVAS_OPTIONS":
       return saveStateToHistory(state, {
         ...state,
-        ...(action.payload.roundedCorners !== undefined && { roundedCorners: action.payload.roundedCorners }),
-        ...(action.payload.showGrid !== undefined && { showGrid: action.payload.showGrid }),
+        ...(action.payload.roundedCorners !== undefined && {
+          roundedCorners: action.payload.roundedCorners,
+        }),
+        ...(action.payload.showGrid !== undefined && {
+          showGrid: action.payload.showGrid,
+        }),
       });
     case "SET_EDITING_STATES":
       return {
         ...state,
-        ...(action.payload.editingPanel !== undefined && { editingPanel: action.payload.editingPanel }),
-        ...(action.payload.isEditingCanvas !== undefined && { isEditingCanvas: action.payload.isEditingCanvas }),
+        ...(action.payload.editingPanel !== undefined && {
+          editingPanel: action.payload.editingPanel,
+        }),
+        ...(action.payload.isEditingCanvas !== undefined && {
+          isEditingCanvas: action.payload.isEditingCanvas,
+        }),
       };
     case "LOAD_CONFIG":
       const validatedPanels = validateAndAdjustPanels(
@@ -192,11 +255,15 @@ const canvasReducer = (
         canvasHeight: action.payload.canvasHeight || 720,
         canvasBgColor: action.payload.canvasBgColor || "#ffffff",
         canvasFgColor: action.payload.canvasFgColor || "#000000",
-        roundedCorners: action.payload.roundedCorners !== undefined ? action.payload.roundedCorners : true,
+        roundedCorners:
+          action.payload.roundedCorners !== undefined
+            ? action.payload.roundedCorners
+            : true,
         showGrid: action.payload.showGrid || false,
       });
     case "UNDO":
       if (state.past.length === 0) return state;
+      console.log("UNDO", state.past);
       const previous = state.past[0];
       return {
         ...previous,
@@ -212,6 +279,7 @@ const canvasReducer = (
       };
     case "REDO":
       if (state.future.length === 0) return state;
+      console.log("REDO", state);
       const next = state.future[0];
       return {
         ...next,
@@ -225,6 +293,42 @@ const canvasReducer = (
         ],
         future: state.future.slice(1),
       };
+    case "BRING_FORWARD":
+      const panelToMoveForward = state.panels.find(p => p.id === action.payload);
+      if (!panelToMoveForward) return state;
+      const currentZIndexForward = panelToMoveForward.zIndex;
+      const panelsAbove = state.panels.filter(p => p.zIndex > currentZIndexForward);
+      const nextZIndexForward = panelsAbove.length > 0 
+        ? Math.min(...panelsAbove.map(p => p.zIndex))
+        : currentZIndexForward + 1;
+      return saveStateToHistory(state, {
+        ...state,
+        panels: state.panels.map((panel) =>
+          panel.id === action.payload
+            ? { ...panel, zIndex: nextZIndexForward }
+            : panel.zIndex === nextZIndexForward
+              ? { ...panel, zIndex: currentZIndexForward }
+              : panel
+        ),
+      });
+    case "BRING_BACKWARD":
+      const panelToMoveBackward = state.panels.find(p => p.id === action.payload);
+      if (!panelToMoveBackward || panelToMoveBackward.zIndex <= 1) return state;
+      const currentZIndexBackward = panelToMoveBackward.zIndex;
+      const panelsBelow = state.panels.filter(p => p.zIndex < currentZIndexBackward);
+      const nextZIndexBackward = panelsBelow.length > 0 
+        ? Math.max(...panelsBelow.map(p => p.zIndex))
+        : currentZIndexBackward - 1;
+      return saveStateToHistory(state, {
+        ...state,
+        panels: state.panels.map((panel) =>
+          panel.id === action.payload
+            ? { ...panel, zIndex: Math.max(1, nextZIndexBackward) }
+            : panel.zIndex === nextZIndexBackward
+              ? { ...panel, zIndex: currentZIndexBackward }
+              : panel
+        ),
+      });
     default:
       return state;
   }
@@ -236,28 +340,46 @@ export const useCanvasState = () => {
 
   // Action creators for easier usage
   const actions = {
-    setPanels: (panels: Panel[]) => dispatch({ type: "SET_PANELS", payload: panels }),
+    setPanels: (panels: Panel[]) =>
+      dispatch({ type: "SET_PANELS", payload: panels }),
     addPanel: (panel: Panel) => dispatch({ type: "ADD_PANEL", payload: panel }),
-    removePanel: (id: string) => dispatch({ type: "REMOVE_PANEL", payload: id }),
+    removePanel: (id: string) =>
+      dispatch({ type: "REMOVE_PANEL", payload: id }),
     updatePanel: (id: string, updates: Partial<Panel>) =>
       dispatch({ type: "UPDATE_PANEL", payload: { id, updates } }),
     updatePanelPosition: (id: string, x: number, y: number) =>
       dispatch({ type: "UPDATE_PANEL_POSITION", payload: { id, x, y } }),
     updatePanelDimensions: (id: string, width: number, height: number) =>
-      dispatch({ type: "UPDATE_PANEL_DIMENSIONS", payload: { id, width, height } }),
+      dispatch({
+        type: "UPDATE_PANEL_DIMENSIONS",
+        payload: { id, width, height },
+      }),
     clearPanels: () => dispatch({ type: "CLEAR_PANELS" }),
-    setSelectedPanel: (id: string | null) => dispatch({ type: "SET_SELECTED_PANEL", payload: id }),
+    setSelectedPanel: (id: string | null) =>
+      dispatch({ type: "SET_SELECTED_PANEL", payload: id }),
     setCanvasDimensions: (width: number, height: number) =>
       dispatch({ type: "SET_CANVAS_DIMENSIONS", payload: { width, height } }),
     setCanvasColors: (bgColor?: string, fgColor?: string) =>
       dispatch({ type: "SET_CANVAS_COLORS", payload: { bgColor, fgColor } }),
     setCanvasOptions: (roundedCorners?: boolean, showGrid?: boolean) =>
-      dispatch({ type: "SET_CANVAS_OPTIONS", payload: { roundedCorners, showGrid } }),
-    setEditingStates: (editingPanel?: string | null, isEditingCanvas?: boolean) =>
-      dispatch({ type: "SET_EDITING_STATES", payload: { editingPanel, isEditingCanvas } }),
-    loadConfig: (config: CanvasConfig) => dispatch({ type: "LOAD_CONFIG", payload: config }),
+      dispatch({
+        type: "SET_CANVAS_OPTIONS",
+        payload: { roundedCorners, showGrid },
+      }),
+    setEditingStates: (
+      editingPanel?: string | null,
+      isEditingCanvas?: boolean
+    ) =>
+      dispatch({
+        type: "SET_EDITING_STATES",
+        payload: { editingPanel, isEditingCanvas },
+      }),
+    loadConfig: (config: CanvasConfig) =>
+      dispatch({ type: "LOAD_CONFIG", payload: config }),
     undo: () => dispatch({ type: "UNDO" }),
     redo: () => dispatch({ type: "REDO" }),
+    bringForward: (id: string) => dispatch({ type: "BRING_FORWARD", payload: id }),
+    bringBackward: (id: string) => dispatch({ type: "BRING_BACKWARD", payload: id }),
   };
 
   return {

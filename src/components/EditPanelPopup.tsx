@@ -7,6 +7,8 @@ interface EditPanelPopupProps {
   onTitleChange: (id: string, title: string) => void;
   onDimensionChange: (id: string, updates: Partial<Panel>) => void;
   onClose: () => void;
+  onBringForward: (id: string) => void;
+  onBringBackward: (id: string) => void;
 }
 
 export default function EditPanelPopup({
@@ -15,12 +17,14 @@ export default function EditPanelPopup({
   onTitleChange,
   onDimensionChange,
   onClose,
+  onBringForward,
+  onBringBackward,
 }: EditPanelPopupProps) {
   return (
-    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 edit-popup">
-      <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-2xl border ${
+    <div className="fixed top-0 right-0 h-screen w-[300px] z-30">
+      <div className={`bg-white dark:bg-gray-800 shadow-2xl border-l ${
         theme === "dark" ? "border-gray-600" : "border-gray-200"
-      } min-w-[280px] overflow-hidden`}>
+      } h-full overflow-y-auto flex flex-col`}>
         <div className={`px-4 py-3 border-b ${
           theme === "dark" ? "border-gray-600 bg-gray-700" : "border-gray-200 bg-gray-50"
         } flex items-center justify-between`}>
@@ -39,8 +43,8 @@ export default function EditPanelPopup({
           </button>
         </div>
 
-        <div className={`p-4 space-y-4 ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}>
-          <div >
+        <div className={`p-4 space-y-4 flex-1 ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}>
+          <div>
             <label className={`block text-sm font-medium mb-2 ${
               theme === "dark" ? "text-gray-200" : "text-gray-700"
             }`}>
@@ -114,22 +118,80 @@ export default function EditPanelPopup({
               </p>
             )}
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className={`px-4 py-3 border-t ${
-          theme === "dark" ? "border-gray-600 bg-gray-750" : "border-gray-200 bg-gray-50"
-        } flex justify-end gap-2`}>
-          <button
-            onClick={onClose}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-              theme === "dark"
-                ? "bg-gray-600 hover:bg-gray-500 text-white"
-                : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-            }`}
-          >
-            Done
-          </button>
+          <div>
+            <label className={`block text-sm font-medium mb-2 ${
+              theme === "dark" ? "text-gray-200" : "text-gray-700"
+            }`}>
+              Shape Colors
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={`block text-xs mb-1 ${
+                  theme === "dark" ? "text-gray-400" : "text-gray-600"
+                }`}>
+                  Fill Color
+                </label>
+                <input
+                  type="color"
+                  value={panel.fillColor || "#ffffff"}
+                  onChange={(e) => onDimensionChange(panel.id, { fillColor: e.target.value })}
+                  className={`w-full h-9 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    theme === "dark"
+                      ? "bg-gray-700 border-gray-600"
+                      : "bg-white border-gray-300"
+                  } cursor-pointer`}
+                />
+              </div>
+              <div>
+                <label className={`block text-xs mb-1 ${
+                  theme === "dark" ? "text-gray-400" : "text-gray-600"
+                }`}>
+                  Border Color
+                </label>
+                <input
+                  type="color"
+                  value={panel.borderColor || "#d1d5db"}
+                  onChange={(e) => onDimensionChange(panel.id, { borderColor: e.target.value })}
+                  className={`w-full h-9 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    theme === "dark"
+                      ? "bg-gray-700 border-gray-600"
+                      : "bg-white border-gray-300"
+                  } cursor-pointer`}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className={`block text-sm font-medium mb-2 ${
+              theme === "dark" ? "text-gray-200" : "text-gray-700"
+            }`}>
+              Layer Order
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => onBringForward(panel.id)}
+                className={`p-2 rounded-md text-sm font-medium transition-colors ${
+                  theme === "dark"
+                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                    : "bg-blue-500 hover:bg-blue-600 text-white"
+                }`}
+              >
+                Bring Forward
+              </button>
+              <button
+                onClick={() => onBringBackward(panel.id)}
+                className={`p-2 rounded-md text-sm font-medium transition-colors ${
+                  theme === "dark"
+                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                    : "bg-blue-500 hover:bg-blue-600 text-white"
+                }`}
+              >
+                Bring Backward
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -1,24 +1,24 @@
-import { useEffect } from 'react';
-import { ThemeProvider } from './context/ThemeContext';
-import DrawingCanvas from './components/DrawingCanvas';
+import { useEffect } from "react";
+import { ThemeProvider } from "./context/ThemeContext";
+import DrawingCanvas from "./components/DrawingCanvas";
 
 function App() {
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
-      event.returnValue = '';
+      event.returnValue = "";
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, []);
 
   return (
     <ThemeProvider>
-    <DrawingCanvas />
+      <DrawingCanvas />
     </ThemeProvider>
   );
 }

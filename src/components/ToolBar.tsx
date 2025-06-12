@@ -273,7 +273,7 @@ export default function Toolbar({
                       ? "text-blue-300 hover:bg-blue-900/50"
                       : "text-blue-600 hover:bg-blue-100"
                   } transition-all duration-200 hover:shadow-sm hover:scale-105`}
-                  title="Save Configuration"
+                  title="Save as JSON"
                 >
                   <Save size={24} />
                   <span className="text-xs font-medium mt-1">Save</span>
@@ -284,7 +284,7 @@ export default function Toolbar({
                       ? "text-blue-300 hover:bg-blue-900/50"
                       : "text-blue-600 hover:bg-blue-100"
                   } transition-all duration-200 hover:shadow-sm hover:scale-105 cursor-pointer`}
-                  title="Import Configuration"
+                  title="Import a JSON"
                 >
                   <Upload size={24} />
                   <span className="text-xs font-medium mt-1">Import</span>

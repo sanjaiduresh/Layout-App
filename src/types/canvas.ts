@@ -1,7 +1,5 @@
 export type PanelShape = "rectangle" | "circle" | "ellipse" | "triangle" | "hexagon" | "pentagon" | "star" | "diamond";
 
-
-
 export interface Panel {
   id: string;
   title: string;
@@ -10,7 +8,9 @@ export interface Panel {
   width: number;
   height: number;
   zIndex: number;
-  shape: PanelShape; // Add more shapes as needed
+  shape: PanelShape;
+  fillColor?: string; // New field for shape fill color
+  borderColor?: string; // New field for shape border color
 }
 
 export interface CanvasConfig {
@@ -37,9 +37,9 @@ export interface ResizeStartPos {
   panelY: number;
 }
 
-export interface ResizingPanel{
-   id: string;
-    corner: string;
+export interface ResizingPanel {
+  id: string;
+  corner: string;
 }
 
 export interface CanvasState {
@@ -56,4 +56,3 @@ export interface CanvasState {
   past: CanvasState[];
   future: CanvasState[];
 }
-
