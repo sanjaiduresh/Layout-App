@@ -10,13 +10,14 @@ interface PanelComponentProps {
   theme: string;
   isCtrlPressed: boolean;
   moveMode: boolean;
+setMoveMode: (mode: boolean) => void;
   resizingPanel: ResizingPanel | null;
   selectedPanel: string | null;
   roundedCorners: boolean;
   actions: {
     setSelectedPanel: (id: string) => void;
     updatePanel: (id: string, updates: Partial<Panel>) => void;
-    removePanel: (id: string) => void;
+    removePanel: (id: string) => void;  
     setEditingStates: (panelId?: string, isEditingCanvas?: boolean) => void;
     bringForward: (id: string) => void;
     bringBackward: (id: string) => void;
@@ -33,6 +34,7 @@ export default function PanelComponent({
   theme,
   isCtrlPressed,
   moveMode,
+  setMoveMode,
   resizingPanel,
   selectedPanel,
   roundedCorners,
@@ -59,6 +61,7 @@ export default function PanelComponent({
 
   const toggleMoveMode = (e: React.MouseEvent) => {
     e.stopPropagation();
+    setMoveMode(!moveMode);
   };
 
   return (

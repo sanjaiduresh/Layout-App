@@ -21,7 +21,7 @@ export default function EditPanelPopup({
   onBringBackward,
 }: EditPanelPopupProps) {
   return (
-    <div className="fixed top-0 right-0 h-screen w-[300px] z-30">
+    <div className="fixed top-[26%] right-0 h-[80%] w-[300px] z-30">
       <div className={`bg-white dark:bg-gray-800 shadow-2xl border-l ${
         theme === "dark" ? "border-gray-600" : "border-gray-200"
       } h-full overflow-y-auto flex flex-col`}>

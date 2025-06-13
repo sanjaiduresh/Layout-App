@@ -249,8 +249,8 @@ export default function DrawingCanvas() {
     const canvas = document.querySelector(".canvas-container");
     if (canvas) {
       const rect = canvas.getBoundingClientRect();
-      const x = rect.width / 2 - 50;
-      const y = rect.height / 2 - 50;
+      const x = rect.width / 2 - 150;
+      const y = rect.height / 2 - 150;
       const maxZIndex = panels.length > 0 ? Math.max(...panels.map((p) => p.zIndex)) : 0;
       const allowedPanelShapes = [
         "rectangle",
@@ -271,8 +271,8 @@ export default function DrawingCanvas() {
         title: `Panel ${panels.length + 1}`,
         x,
         y,
-        width: 400,
-        height: panelShape === "circle" ? 400 : 400,
+        width: 300,
+        height: panelShape === "circle" ? 300 : 300,
         zIndex: maxZIndex + 1,
         shape: panelShape,
         fillColor: "#ffffff",
@@ -587,6 +587,7 @@ export default function DrawingCanvas() {
                     theme={theme}
                     isCtrlPressed={isCtrlPressed}
                     moveMode={moveMode}
+                    setMoveMode={setMoveMode}
                     resizingPanel={resizingPanel}
                     selectedPanel={selectedPanel}
                     roundedCorners={roundedCorners}
